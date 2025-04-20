@@ -73,7 +73,7 @@
 
     document.getElementById('submit').addEventListener('click', () => {
       const dataUrl = canvas.toDataURL('image/jpeg');
-      fetch("https://ultimaisolutions.app.n8n.cloud/webhook-test/6cf2e964-f867-477d-a7c9-79f074a19003", {
+      fetch("https://ultimaisolutions.app.n8n.cloud/webhook/signature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: dataUrl })
