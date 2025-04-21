@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Here</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #000;
+      background-color: #fff;
+      touch-action: none;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>אנא חתום למטה</h2>
+  <canvas id="signaturePad" width="400" height="200"></canvas><br>
+  <button id="clear">נקה</button>
+  <button id="submit">שלח חתימה</button>
+
+  <script>
+    const canvas = document.getElementById('signaturePad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function getPosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches) {
+        return {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
+        };
+      } else {
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+    }
+
+    function startDraw(e) {
+      drawing = true;
+      const pos = getPosition(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      e.preventDefault();
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      const pos = getPosition(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      e.preventDefault();
+    }
+
+    function stopDraw(e) {
+      drawing = false;
+      e.preventDefault();
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseout', stopDraw);
+
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDraw);
+
+    document.getElementById('clear').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    document.getElementById('submit').addEventListener('click', () => {
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      const uuid = getQueryParam("uuid") || new Date().getTime().toString();
+
+      fetch("https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uuid: uuid,
+          signatureImage: dataUrl
+        })
+      })
+      .then(response => response.text())
+      .then(data => {
+        alert("החתימה נשמרה בהצלחה");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("שליחת החתימה נכשלה");
+      });
+    });
+  </script>
+
+</body>
+</html>
