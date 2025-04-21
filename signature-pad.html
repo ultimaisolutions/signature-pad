@@ -109,23 +109,6 @@
       .catch(err => {
         console.error("Error:", err);
         alert("שליחת החתימה נכשלה");
-      fetch("https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          uuid: uuid,
-          signatureImage: dataUrl
-        })
-      })
-      .then(response => response.text())
-      .then(data => {
-        alert("החתימה נשמרה בהצלחה");
-      })
-      .catch(err => {
-        console.error("Error:", err);
-        alert("שליחת החתימה נכשלה");
       });
     });
   </script>
