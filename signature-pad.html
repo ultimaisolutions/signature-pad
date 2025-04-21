@@ -5,17 +5,29 @@
   <meta charset="UTF-8">
   <title>Sign Here</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    canvas { border: 2px solid #000; background-color: #fff; touch-action: none; }
-    button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #000;
+      background-color: #fff;
+      touch-action: none;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Please sign below:</h2>
+  <h2>אנא חתום למטה</h2>
   <canvas id="signaturePad" width="400" height="200"></canvas><br>
-  <button id="clear">Clear</button>
-  <button id="submit">Submit</button>
+  <button id="clear">נקה</button>
+  <button id="submit">שלח חתימה</button>
 
   <script>
     const canvas = document.getElementById('signaturePad');
@@ -71,15 +83,50 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
     document.getElementById('submit').addEventListener('click', () => {
       const dataUrl = canvas.toDataURL('image/jpeg');
-      fetch("https://ultimaisolutions.app.n8n.cloud/webhook/signature", {
+      const uuid = getQueryParam("uuid") || new Date().getTime().toString();
+
+      fetch("https://script.google.com/macros/s/AKfycbzkyyTj_oXDOmFdEUAckg1V3fsVCsr18pJPnGPHUFeAEWc46pj-hw8NsUP6Fpuc4syeZQ/exec", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: dataUrl })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uuid: uuid,
+          signatureImage: dataUrl
+        })
       })
-      .then(response => alert("Signature sent successfully."))
-      .catch(err => alert("Failed to send signature."));
+      .then(response => response.text())
+      .then(data => {
+        alert("החתימה נשמרה בהצלחה");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("שליחת החתימה נכשלה");
+      fetch("https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uuid: uuid,
+          signatureImage: dataUrl
+        })
+      })
+      .then(response => response.text())
+      .then(data => {
+        alert("החתימה נשמרה בהצלחה");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("שליחת החתימה נכשלה");
+      });
     });
   </script>
 
