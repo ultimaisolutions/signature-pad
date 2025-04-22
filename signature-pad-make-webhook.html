@@ -20,7 +20,7 @@
       font-size: 16px;
     }
   </style>
-  <!-- 1. Include the Signature Pad library -->
+  <!-- Include the Signature Pad library -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 </head>
 <body>
@@ -31,14 +31,13 @@
   <button id="submit">שלח חתימה</button>
 
   <script>
-    // 2. Initialize SignaturePad on your <canvas>
     const canvas = document.getElementById('signaturePad');
     const signaturePad = new SignaturePad(canvas, {
       backgroundColor: 'rgb(255,255,255)', // white background
       penColor: 'black'
     });
 
-    // 3. Wire up the “Clear” button
+    // Clear the pad
     document.getElementById('clear').addEventListener('click', () => {
       signaturePad.clear();
     });
@@ -49,26 +48,33 @@
       return params.get(name);
     }
 
-    // 4. On “Submit” convert to JPEG and POST to Make.com
+    // On Submit: export blob and POST as form-data
     document.getElementById('submit').addEventListener('click', () => {
       if (signaturePad.isEmpty()) {
-        return alert('אנא צייר חתימה לפני השליחה');
+        alert('אנא צייר חתימה לפני השליחה');
+        return;
       }
-      // Export as JPEG
-      const dataUrl = signaturePad.toDataURL('image/jpeg');
       const uuid = getQueryParam('uuid') || Date.now().toString();
 
-      fetch('https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uuid, signatureImage: dataUrl })
-      })
-      .then(res => res.text())
-      .then(() => alert('החתימה נשמרה בהצלחה'))
-      .catch(err => {
-        console.error(err);
-        alert('שליחת החתימה נכשלה');
-      });
+      // Convert canvas to JPEG blob
+      canvas.toBlob(blob => {
+        const form = new FormData();
+        form.append('uuid', uuid);
+        form.append('signature', blob, 'signature.jpg');
+
+        fetch('https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh', {
+          method: 'POST',
+          body: form
+        })
+        .then(res => {
+          if (!res.ok) throw new Error(res.statusText);
+          alert('החתימה נשמרה בהצלחה');
+        })
+        .catch(err => {
+          console.error(err);
+          alert('שליחת החתימה נכשלה');
+        });
+      }, 'image/jpeg');
     });
   </script>
 
