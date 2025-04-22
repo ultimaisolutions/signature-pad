@@ -48,7 +48,7 @@
       return params.get(name);
     }
 
-    // On Submit: export blob and POST as form-data
+    // On Submit: export blob and POST as multipart/form-data
     document.getElementById('submit').addEventListener('click', () => {
       if (signaturePad.isEmpty()) {
         alert('אנא צייר חתימה לפני השליחה');
@@ -56,13 +56,13 @@
       }
       const uuid = getQueryParam('uuid') || Date.now().toString();
 
-      // Convert canvas to JPEG blob
       canvas.toBlob(blob => {
         const form = new FormData();
         form.append('uuid', uuid);
         form.append('signature', blob, 'signature.jpg');
 
-        fetch('https://hook.eu2.make.com/7b7m3jq4864m4hmon7bir8lrq3dqsynh', {
+        // <-- POST to your Make.com scenario endpoint
+        fetch('https://hook.eu2.make.com/uy2g871r3kuqqg18fb7wr3tsnn1qd4ht', {
           method: 'POST',
           body: form
         })
